@@ -201,6 +201,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 } else {
                     Toast.makeText(this, "permission denied",
                             Toast.LENGTH_LONG).show();
+
                 }
                 return;
             }
