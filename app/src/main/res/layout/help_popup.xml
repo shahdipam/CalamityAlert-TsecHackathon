@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cardview_light_background">
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/name"
+        android:hint="Name"
+        android:focusable="true"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/phoneNumber"
+        android:hint="phone number"
+        android:focusable="true"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/send"
+            android:text="Send"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/cancel"
+            android:text="Cancel"/>
+    </LinearLayout>
+
+
+</LinearLayout>
