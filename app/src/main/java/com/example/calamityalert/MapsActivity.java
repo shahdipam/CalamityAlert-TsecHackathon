@@ -7,7 +7,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Criteria;
@@ -20,8 +23,12 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -37,9 +44,12 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -55,24 +65,79 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     ListView listView;
     List<disasterObj> list;
-
+    RelativeLayout layout;
+    TextView goTovictim, goToVolunteer;
+    DatabaseReference ref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
+        layout = findViewById(R.id.helpbar);
+        goTovictim = findViewById(R.id.help);
+        goToVolunteer = findViewById(R.id.volunteer);
+        ref = FirebaseDatabase.getInstance().getReference("disasters");
+        goTovictim.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MapsActivity.this, Victim.class));
+            }
+        });
+
+        goToVolunteer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                final AlertDialog.Builder builder= new AlertDialog.Builder(MapsActivity.this);
+                builder.setTitle("Please enter password to continue");
+
+                final EditText input = new EditText(MapsActivity.this);
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT);
+                input.setLayoutParams(lp);
+                builder.setView(input);
+
+                builder.setPositiveButton("Submit", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (input.getText().toString().equals("admin")){
+                            Toast.makeText(MapsActivity.this, "logged in", Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(MapsActivity.this, volunteer.class));
+                        }
+                        else
+                        {input.setError("Incorrect password");
+                            Toast.makeText(MapsActivity.this, "Incorrect password", Toast.LENGTH_SHORT).show();
+                    }
+                    }
+                });
+
+                builder.show();
+
+            }
+        });
+
+
+
         listView = findViewById(R.id.listview);
         list = new ArrayList<>();
-        list.add(new disasterObj("FLOOD", new LatLng(12,37),"Andheri"));
-        list.add(new disasterObj("FLOOD", new LatLng(19,59),"Borivali"));
-        list.add(new disasterObj("FLOOD", new LatLng(12,89),"Malad"));
-        list.add(new disasterObj("FLOOD", new LatLng(30,69),"Sion"));
-        list.add(new disasterObj("FLOOD", new LatLng(52,91),"Wadala"));
-        list.add(new disasterObj("FLOOD", new LatLng(22,109),"Andheri"));
+        list.add(new disasterObj("FLOOD", new LatLng(19.076090, 72.877426),"Andheri"));
+        list.add(new disasterObj("EARTHQUAKE", new LatLng(19.155001, 72.849998),"Goregaon"));
+        list.add(new disasterObj("FLOOD", new LatLng(16.994444, 73.300003),"Ratnagiri"));
+        list.add(new disasterObj("HURRICANE", new LatLng(19.228825, 72.854118),"Borivali"));
+        list.add(new disasterObj("FLOOD", new LatLng(19.0178, 72.8478),"Dadar"));
+        list.add(new disasterObj("FLOOD", new LatLng(19.1726, 72.9425),"Mulund"));
         String[] dis = new String[list.size()];
-        for(int i=0;i<dis.length;i++)
+        HashMap<String, String> hashMap = new HashMap<>();
+        for(int i=0;i<dis.length;i++){
             dis[i]=""+list.get(i).getType()+"-"+list.get(i).getAddress();
+            hashMap.put("type",list.get(i).getType());
+            hashMap.put("latlng", String.valueOf(list.get(i).getLocation()));
+            hashMap.put("address",list.get(i).getAddress());
+
+            ref.child("location"+i).setValue(hashMap);
+        }
 
         listView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,
                 dis));
@@ -82,6 +147,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(list.get(position).getLocation()));
                 mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+
+//                mCurrLocationMarker.showInfoWindow();
 
             }
         });
@@ -123,14 +190,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         HomeInfoWindow homeInfoWindow = new HomeInfoWindow(this);
         mMap.setInfoWindowAdapter(homeInfoWindow);
 
+
         for(int i=0;i<list.size();i++) {
             options.position(list.get(i).getLocation()).title(list.get(i).getAddress()+"-"+list.get(i).getType()).snippet(list.get(i).getType());
 
             Marker m = mMap.addMarker(options);
             m.setTag(list.get(i).getAddress());
-            m.showInfoWindow();
-        }
+            //m.showInfoWindow();
 
+        }
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker) {
+                        layout.setVisibility(View.VISIBLE);
+                        return false;
+                    }
+                });
+
+                layout.setVisibility(View.GONE);
+            }
+        });
     }
 
     protected synchronized void buildGoogleApiClient() {

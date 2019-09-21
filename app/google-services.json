@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "882610247102",
+    "firebase_url": "https://disaster-management-f9297.firebaseio.com",
+    "project_id": "disaster-management-f9297",
+    "storage_bucket": "disaster-management-f9297.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:882610247102:android:abb97f9e85ddefb53315ef",
+        "android_client_info": {
+          "package_name": "com.example.android.myapplication111"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "882610247102-af6cp2lte5odrantap3flg8fsol844ji.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGv15biu8AqKZG0DYHt0w9saPoUlnYfq4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "882610247102-af6cp2lte5odrantap3flg8fsol844ji.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:882610247102:android:9c7bc416ef81178c3315ef",
+        "android_client_info": {
+          "package_name": "com.example.calamityalert"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "882610247102-af6cp2lte5odrantap3flg8fsol844ji.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGv15biu8AqKZG0DYHt0w9saPoUlnYfq4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "882610247102-af6cp2lte5odrantap3flg8fsol844ji.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

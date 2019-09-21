@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.Marker;
@@ -28,8 +29,6 @@ public class HomeInfoWindow implements GoogleMap.InfoWindowAdapter {
         View view = ((Activity)context).getLayoutInflater().inflate(R.layout.home_map_marker, null);
 
         TextView header = view.findViewById(R.id.header);
-        TextView help = view.findViewById(R.id.help);
-        TextView volunteer = view.findViewById(R.id.volunteer);
 
         header.setText(marker.getTitle());
 

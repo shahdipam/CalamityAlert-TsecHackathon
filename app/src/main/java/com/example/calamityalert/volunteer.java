@@ -7,9 +7,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
-import android.app.ActionBar;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Address;
@@ -19,17 +16,8 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.PopupWindow;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -40,64 +28,88 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class Victim extends FragmentActivity implements OnMapReadyCallback,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
+public class volunteer extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     private GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
-    Marker mCurrLocationMarker;
     LocationRequest mLocationRequest;
+    Marker mCurrLocationMarker;
+    Button addSafeZone;
+    Marker m,m1;
+    ArrayList<LatLng> latLngs;
     DatabaseReference ref;
+    List<VictimHelpDetails> victimlist;
 
-    PopupWindow popupWindow;
 
-    TextView help,call;
-    LatLng coords = new LatLng(0,0);
-    Button send, cancel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_victim);
+        setContentView(R.layout.activity_volunteer);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        ref = FirebaseDatabase.getInstance().getReference("victim");
+        latLngs = new ArrayList<>();
 
-        ref = FirebaseDatabase.getInstance().getReference();
-        help = (TextView)findViewById(R.id.help);
-        call = (TextView)findViewById(R.id.call);
+        victimlist = new ArrayList<>();
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds: dataSnapshot.getChildren()){
+                    VictimHelpDetails details = new VictimHelpDetails();
 
-        help.setOnClickListener(new View.OnClickListener() {
+                    details.setName(ds.getValue(VictimHelpDetails.class).getName());
+                    details.setContact(ds.getValue(VictimHelpDetails.class).getContact());
+                    details.setLatLng(ds.getValue(VictimHelpDetails.class).getLatLng());
+
+                    victimlist.add(details);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        addSafeZone = (Button)findViewById(R.id.safeZone);
+        addSafeZone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*LayoutInflater layoutInflater = (LayoutInflater)Victim.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                View customView = layoutInflater.inflate(R.layout.help_popup, null);
+                m.setVisible(false);
+                m1.setVisible(false);
 
-                send = (Button)customView.findViewById(R.id.send);
-                cancel = (Button)customView.findViewById(R.id.cancel);
-
-                popupWindow = new PopupWindow(customView, ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
-
-                popupWindow.showAtLocation((RelativeLayout)findViewById(R.id.victimActivity), Gravity.CENTER, 0, 0);*/
-
-
-                customDialog cd = new customDialog(Victim.this, coords);
-                cd.show();
+                mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+                    @Override
+                    public void onMapClick(LatLng latLng) {
+                        MarkerOptions markerOptions = new MarkerOptions();
+                        markerOptions.position(latLng)
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
+                        latLngs.add(latLng);
+                        mMap.addMarker(markerOptions);
+                        m.setVisible(true);
+                        m1.setVisible(true);
+                    }
+                });
             }
         });
 
@@ -120,8 +132,6 @@ public class Victim extends FragmentActivity implements OnMapReadyCallback,
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.getUiSettings().setZoomGesturesEnabled(true);
         mMap.getUiSettings().setCompassEnabled(true);
-        //Initialize Google Play Services
-//        SafeZone.Retreive();
 
         int t = SafeZone.latLngs.size();
         for(int i=0;i<t;i++){
@@ -130,6 +140,41 @@ public class Victim extends FragmentActivity implements OnMapReadyCallback,
             mMap.addMarker(markerOptions);
         }
 
+        for(int i=0; i<victimlist.size();i++){
+            VictimHelpDetails victim = victimlist.get(i);
+            MarkerOptions options = new MarkerOptions();
+            options.position(victim.getLatLng()).title(victim.getName()).snippet(victim.getContact())
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+
+            CustomMapMarkerWindow customInfoWindow = new CustomMapMarkerWindow(this);
+            mMap.setInfoWindowAdapter(customInfoWindow);
+
+            m = mMap.addMarker(options);
+        }
+        LatLng victim1 = new LatLng(19.136326, 72.827660);
+
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(victim1).title("Taksh").snippet("9876543210")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+
+        CustomMapMarkerWindow customInfoWindow = new CustomMapMarkerWindow(this);
+        mMap.setInfoWindowAdapter(customInfoWindow);
+
+        m = mMap.addMarker(markerOptions);
+        //m.showInfoWindow();
+
+        LatLng victim2 = new LatLng(19.182755, 72.840157);
+        MarkerOptions markerOptions1 = new MarkerOptions();
+        markerOptions1.position(victim2).title("ARYA JPMC").snippet("14,00,000")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+
+        CustomMapMarkerWindow customInfoWindow2 = new CustomMapMarkerWindow(this);
+        mMap.setInfoWindowAdapter(customInfoWindow2);
+
+        m1 = mMap.addMarker(markerOptions1);
+
+
+        // Add a marker in Sydney and move the camera
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this,
                     Manifest.permission.ACCESS_FINE_LOCATION)
@@ -151,7 +196,6 @@ public class Victim extends FragmentActivity implements OnMapReadyCallback,
                 .build();
         mGoogleApiClient.connect();
     }
-
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
@@ -180,14 +224,13 @@ public class Victim extends FragmentActivity implements OnMapReadyCallback,
     @Override
     public void onLocationChanged(Location location) {
         mLastLocation = location;
-        coords = new LatLng(location.getLatitude(), location.getLongitude());
         if (mCurrLocationMarker != null) {
             mCurrLocationMarker.remove();
         }
 //Showing Current Location Marker on Map
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(latLng).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+        markerOptions.position(latLng);
         LocationManager locationManager = (LocationManager)
                 getSystemService(Context.LOCATION_SERVICE);
         String provider = locationManager.getBestProvider(new Criteria(), true);
@@ -208,17 +251,13 @@ public class Victim extends FragmentActivity implements OnMapReadyCallback,
                 List<Address> listAddresses = geocoder.getFromLocation(latitude,
                         longitude, 1);
                 if (null != listAddresses && listAddresses.size() > 0) {
-                    String state = listAddresses.get(0).getAdminArea();
-                    String country = listAddresses.get(0).getCountryName();
-                    String subLocality = listAddresses.get(0).getSubLocality();
-                    markerOptions.title("" + latLng + "," + subLocality + "," + state
-                            + "," + country);
+                    markerOptions.title("you").snippet("NA");
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
         mCurrLocationMarker = mMap.addMarker(markerOptions);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
@@ -226,5 +265,12 @@ public class Victim extends FragmentActivity implements OnMapReadyCallback,
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,
                     this);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        SafeZone.latLngs = latLngs;
+        SafeZone.AddtoFirebase();
     }
 }

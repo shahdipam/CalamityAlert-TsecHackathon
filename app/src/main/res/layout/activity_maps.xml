@@ -7,8 +7,34 @@
     android:layout_height="match_parent"
     tools:context=".MapsActivity">
 
+    <RelativeLayout
+        android:id="@+id/helpbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:padding="8dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/help"
+            android:layout_marginTop="5dp"
+            android:textColor="@color/colorAccent"
+            android:text="Need help?"
+            android:clickable="true"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/volunteer"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="240dp"
+            android:text="I'm a volunteer"
+            android:clickable="true"/>
+    </RelativeLayout>
+
     <com.sothree.slidinguppanel.SlidingUpPanelLayout xmlns:sothree="http://schemas.android.com/apk/res-auto"
         android:id="@+id/sliding_layout"
+        android:layout_below="@id/helpbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#FFFFFF"
@@ -45,6 +71,7 @@
                 android:layout_weight="1" />
 
         </LinearLayout>
+
 
     </com.sothree.slidinguppanel.SlidingUpPanelLayout>
 </RelativeLayout>

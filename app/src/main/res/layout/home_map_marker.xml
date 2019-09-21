@@ -13,32 +13,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="80dp"
+            android:layout_marginBottom="20dp"
             android:text="Location" />
 
-        <TextView
-            android:id="@+id/help"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentBottom="true"
-            android:layout_margin="20dp"
-            android:background="#ED2939"
-            android:padding="8dp"
-            android:text="Need help"
-            android:textColor="#FFFFFF" />
-
-        <TextView
-            android:id="@+id/volunteer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentBottom="true"
-            android:layout_margin="20dp"
-            android:background="#317f43"
-            android:padding="8dp"
-            android:text="I'm a volunteer"
-            android:textColor="#FFFFFF" />
 
     </RelativeLayout>
 </RelativeLayout>
