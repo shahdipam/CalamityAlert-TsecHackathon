@@ -3,6 +3,8 @@ package com.example.calamityalert;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.content.Context;
@@ -14,6 +16,12 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -31,6 +39,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -44,11 +53,40 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Marker mCurrLocationMarker;
     LocationRequest mLocationRequest;
     private GoogleMap mMap;
+    ListView listView;
+    List<disasterObj> list;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        listView = findViewById(R.id.listview);
+        list = new ArrayList<>();
+        list.add(new disasterObj("FLOOD", new LatLng(12,37),"Andheri"));
+        list.add(new disasterObj("FLOOD", new LatLng(19,59),"Borivali"));
+        list.add(new disasterObj("FLOOD", new LatLng(12,89),"Malad"));
+        list.add(new disasterObj("FLOOD", new LatLng(30,69),"Sion"));
+        list.add(new disasterObj("FLOOD", new LatLng(52,91),"Wadala"));
+        list.add(new disasterObj("FLOOD", new LatLng(22,109),"Andheri"));
+        String[] dis = new String[list.size()];
+        for(int i=0;i<dis.length;i++)
+            dis[i]=""+list.get(i).getType()+"-"+list.get(i).getAddress();
+
+        listView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,
+                dis));
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(list.get(position).getLocation()));
+                mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+
+            }
+        });
+        //disasterList = new ArrayList<>();
+        //addListItems();
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkLocationPermission();
@@ -79,6 +117,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             buildGoogleApiClient();
             mMap.setMyLocationEnabled(true);
         }
+
+
+        MarkerOptions options = new MarkerOptions();
+        HomeInfoWindow homeInfoWindow = new HomeInfoWindow(this);
+        mMap.setInfoWindowAdapter(homeInfoWindow);
+
+        for(int i=0;i<list.size();i++) {
+            options.position(list.get(i).getLocation()).title(list.get(i).getAddress()+"-"+list.get(i).getType()).snippet(list.get(i).getType());
+
+            Marker m = mMap.addMarker(options);
+            m.setTag(list.get(i).getAddress());
+            m.showInfoWindow();
+        }
+
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -207,4 +259,36 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
     }
+
+
+/*
+    private void addListItems() {
+
+        Toast.makeText(this, "populate now", Toast.LENGTH_SHORT).show();
+        disasterList.add(
+                new disasterObj("1","FLOOD",
+                        "Flood, Andheri West",
+                        "reported 9 mins ago",
+                        "updated 5 seconds ago",
+                        "go to location" ));
+
+        disasterList.add(
+                new disasterObj("1","FLOOD",
+                        "Flood, Andheri West",
+                        "reported 9 mins ago",
+                        "updated 5 seconds ago",
+                        "go to location" ));
+
+        disasterList.add(
+                new disasterObj("1","FLOOD",
+                        "Flood, Andheri West",
+                        "reported 9 mins ago",
+                        "updated 5 seconds ago",
+                        "go to location" ));
+
+
+        Toast.makeText(this, "populated", Toast.LENGTH_SHORT).show();
+    }
+*/
+
 }
